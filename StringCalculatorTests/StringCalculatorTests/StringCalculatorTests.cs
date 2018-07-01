@@ -40,6 +40,7 @@ namespace StringCalculatorTests
         [InlineData("40,51", "91")]
         [InlineData("7,8,1,1,1,1", "19")]
         [InlineData("456,391", "847")]
+        [InlineData("1000,2", "1002")]
 
         void ReturnsSumWithCommaSeparator(string stringExpression, string expected)
         {
@@ -76,22 +77,53 @@ namespace StringCalculatorTests
                .Throw<ApplicationException>()
                .WithMessage("*-1,-3*");
         }
+
+        [Fact]
+        void IgnoreNumbersBiggerThan1000()
+        {
+            var result = stringCalculator.Add("2,1001");
+
+            result.Should().Be("2");
+        }
+
+        [Fact]
+        void AllowDelimtersOfVariableLength()
+        {
+            var result = stringCalculator.Add("//[***]\n1***2***3");
+
+            result.Should().Be("6");
+        }
+
+        [Theory]
+        [InlineData("//[*][%]\n1*2%3", "6")]
+        [InlineData("//[***][%%%][^^]\n1***2%%%3^^4", "10")]
+        void AllowMultipleDelimetersOfVariableLength(string stringExpression, string expected)
+        {
+            var result = stringCalculator.Add(stringExpression);
+
+            result.Should().Be(expected);
+        }
     }
 
     internal class StringCalculator
     {
         internal string Add(string input)
         {
-            (char[] separators, string expression) = ParseToSeparatorsAndExpression(input);
+            (string[] separators, string expression) = ParseToSeparatorsAndExpression(input);
 
             var numbers = GetNumbers(separators, expression);
 
             ValidateNoNegativeNumbers(numbers);
 
+            numbers = FilterNumbersBiggerThan1000(numbers);
+
             return numbers.Sum().ToString();
         }
 
-        private static IEnumerable<int> GetNumbers(char[] separators, string expression)
+        private IEnumerable<int> FilterNumbersBiggerThan1000(IEnumerable<int> numbers)
+            => numbers.Where(n => n <= 1000);
+
+        private static IEnumerable<int> GetNumbers(string[] separators, string expression)
         {
             return expression.Split(separators, StringSplitOptions.RemoveEmptyEntries).Select(n => int.Parse(n));
         }
@@ -105,22 +137,43 @@ namespace StringCalculatorTests
             }
         }
 
-        private static (char[] separators, string expression) ParseToSeparatorsAndExpression(string expression)
+        private static (string[] separators, string expression) ParseToSeparatorsAndExpression(string expression)
         {
-            char[] separators = DefaultSeparators();
+            var separators = DefaultSeparators();
             if (AreOptionalSeparatorsSpecified(expression))
             {
-                separators = ExtractOptionalSeparators(expression);
-                expression = expression.Substring(3);
+                expression = expression.Substring(2);
+                var splitExpressions = expression.Split("\n", 2, StringSplitOptions.RemoveEmptyEntries);
+                separators = ExtractOptionalSeparators(splitExpressions[0]);
+                expression = splitExpressions[1];
             }
 
             return (separators, expression);
         }
 
-        private static char[] ExtractOptionalSeparators(string expression)
+        private static string[] ExtractOptionalSeparators(string header)
         {
-            char[] separators = new char[] { expression.Split("\n", StringSplitOptions.RemoveEmptyEntries)[0].ToCharArray()[2] };
-            return separators;
+            if (header.Length == 1)
+            {
+                return new string[] { header };
+            }
+
+            var separators = new LinkedList<string>();
+            int separatorStartIndex = 0, separatorLength = 0;
+            while (separatorStartIndex < header.Length && header[separatorStartIndex] == '[')
+            {
+                separatorStartIndex++;
+                while (header[separatorStartIndex + separatorLength] != ']')
+                {
+                    separatorLength++;
+                }
+
+                separators.AddLast(header.Substring(separatorStartIndex, separatorLength));
+                separatorStartIndex += separatorLength + 1;
+                separatorLength = 0;
+            }
+
+            return separators.ToArray();
         }
 
         private static bool AreOptionalSeparatorsSpecified(string expression)
@@ -128,9 +181,9 @@ namespace StringCalculatorTests
             return expression.StartsWith("//");
         }
 
-        private static char[] DefaultSeparators()
+        private static string[] DefaultSeparators()
         {
-            return new char[] { ',', '\n' };
+            return new string[] { ",", "\n" };
         }
     }
 }
