@@ -6,9 +6,11 @@ namespace StringCalculators
 {
     public class SpanCalculator : IStringCalculator
     {
-        public string Add(string input)
+        static readonly string[] DefaultSeparators = new string[] { ",", "\n" };
+
+        public string Add(in ReadOnlySpan<char> input)
         {
-            (string[] separators, string expression) = ParseToSeparatorsAndExpression(input.AsSpan());
+            (string[] separators, string expression) = ParseToSeparatorsAndExpression(input);
 
             var numbers = GetNumbers(separators, expression);
 
@@ -24,7 +26,7 @@ namespace StringCalculators
 
         private static IEnumerable<int> GetNumbers(string[] separators, string expression)
         {
-            return expression.Split(separators, StringSplitOptions.RemoveEmptyEntries).Select(n => int.Parse(n));
+            return expression.Split(separators, StringSplitOptions.RemoveEmptyEntries).Select(n => int.Parse(n.AsSpan()));
         }
 
         private void ValidateNoNegativeNumbers(IEnumerable<int> numbers)
@@ -32,13 +34,13 @@ namespace StringCalculators
             var negativeNumbers = numbers.Where(n => n < 0);
             if (negativeNumbers.Any())
             {
-                throw new ApplicationException($"Input has the following negative numbers: {string.Join(",", negativeNumbers)}. Negative numbers are now allowed.");
+                throw new ApplicationException($"Input has the following negative numbers: {string.Join(",", negativeNumbers)}. Negative numbers are not allowed.");
             }
         }
 
         private static (string[] separators, string expression) ParseToSeparatorsAndExpression(ReadOnlySpan<char> expression)
         {
-            var separators = DefaultSeparators();
+            var separators = DefaultSeparators;
             if (AreOptionalSeparatorsSpecified(expression))
             {
                 expression = expression.Slice(2);
@@ -80,9 +82,9 @@ namespace StringCalculators
             return expression.StartsWith("//");
         }
 
-        private static string[] DefaultSeparators()
+        public string Add(string input)
         {
-            return new string[] { ",", "\n" };
+            return Add(input.AsSpan());
         }
     }
 }

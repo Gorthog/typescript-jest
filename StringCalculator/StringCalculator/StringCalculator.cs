@@ -84,5 +84,10 @@ namespace StringCalculators
         {
             return new string[] { ",", "\n" };
         }
+
+        public string Add(in ReadOnlySpan<char> input)
+        {
+            return Add(input.ToString());
+        }
     }
 }

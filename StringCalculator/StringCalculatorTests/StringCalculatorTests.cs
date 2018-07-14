@@ -70,7 +70,8 @@ namespace StringCalculatorTests
         [Fact]
         void NegativeNumbersThrowExpection()
         {
-            Action act = () => stringCalculator.Add("-1,5,-3");
+            Action act = () => 
+                stringCalculator.Add("-1,5,-3");
 
             act.Should()
                .Throw<ApplicationException>()

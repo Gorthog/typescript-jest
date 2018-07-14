@@ -1,6 +1,7 @@
 ﻿using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Running;
 using StringCalculators;
+using System;
 
 namespace StringCalculatorBenchmarks
 {
@@ -14,7 +15,7 @@ namespace StringCalculatorBenchmarks
         public string StringCalculator() => stringCalculator.Add("//[***][%%%][^^]\n1***2%%%3^^4");
 
         [Benchmark]
-        public string SpanCalculator() => spanCalculator.Add("//[***][%%%][^^]\n1***2%%%3^^4");
+        public string SpanCalculator() => spanCalculator.Add("//[***][%%%][^^]\n1***2%%%3^^4".AsSpan());
     }
 
     class Program
