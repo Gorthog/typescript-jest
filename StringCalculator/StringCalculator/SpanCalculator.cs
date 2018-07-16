@@ -16,25 +16,51 @@ namespace StringCalculators
 
             ValidateNoNegativeNumbers(numbers);
 
-            numbers = FilterNumbersBiggerThan1000(numbers);
+            var filteredNumbers = FilterNumbersBiggerThan1000(numbers);
 
-            return numbers.Sum().ToString();
-        }
-
-        private IEnumerable<int> FilterNumbersBiggerThan1000(IEnumerable<int> numbers)
-            => numbers.Where(n => n <= 1000);
-
-        private static IEnumerable<int> GetNumbers(string[] separators, string expression)
-        {
-            return expression.Split(separators, StringSplitOptions.RemoveEmptyEntries).Select(n => int.Parse(n.AsSpan()));
-        }
-
-        private void ValidateNoNegativeNumbers(IEnumerable<int> numbers)
-        {
-            var negativeNumbers = numbers.Where(n => n < 0);
-            if (negativeNumbers.Any())
+            var sum = 0;
+            foreach (var number in filteredNumbers)
             {
-                throw new ApplicationException($"Input has the following negative numbers: {string.Join(",", negativeNumbers)}. Negative numbers are not allowed.");
+                sum += number;
+            }
+
+            return sum.ToString();
+        }
+
+        private Span<int> FilterNumbersBiggerThan1000(int[] numbers)
+        {
+            Array.Sort(numbers);
+            int index = 0;
+            while (index < numbers.Length && numbers[index] <= 1000)
+            {
+                index++;
+            }
+
+            return numbers.AsSpan().Slice(0, index);
+        }
+
+        private static int[] GetNumbers(string[] separators, string expression)
+        {
+            return expression.Split(separators, StringSplitOptions.RemoveEmptyEntries).Select(n => int.Parse(n.AsSpan())).ToArray();
+        }
+
+        private void ValidateNoNegativeNumbers(Span<int> numbers)
+        {
+            Span<int> negativeNumbers = stackalloc int[numbers.Length];
+            int index = 0;
+            foreach (var number in numbers)
+            {
+                if (number < 0)
+                {
+                    negativeNumbers[index] = number;
+                    index++;
+                }
+
+            }
+
+            if (index > 0)
+            {
+                throw new ApplicationException($"Input has the following negative numbers: {string.Join(",", negativeNumbers.ToArray())}. Negative numbers are not allowed.");
             }
         }
 
