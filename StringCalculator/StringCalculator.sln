@@ -9,9 +9,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StringCalculator", "StringC
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StringCalculatorBenchmarks", "StringCalculatorBenchmarks\StringCalculatorBenchmarks.csproj", "{903E711E-319A-4D81-9F10-3B0548B1B46A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HumanReadableBytesSizeTest", "HumanReadableBytesSizeTest\HumanReadableBytesSizeTest.csproj", "{2791AF5F-61B9-49B5-9976-F6C44AD11153}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HumanReadableBytesSizeTest", "HumanReadableBytesSizeTest\HumanReadableBytesSizeTest.csproj", "{2791AF5F-61B9-49B5-9976-F6C44AD11153}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HumanReadableBytesSize", "HumanReadableBytesSize\HumanReadableBytesSize.csproj", "{DCC487DB-01AF-43B9-8061-340BD018AF21}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HumanReadableBytesSize", "HumanReadableBytesSize\HumanReadableBytesSize.csproj", "{DCC487DB-01AF-43B9-8061-340BD018AF21}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpanExtensions", "SpanExtensions\SpanExtensions.csproj", "{8A4A63E5-1F9D-4585-B350-9CF821B59212}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpanExtensionsTests", "SpanExtensionsTests\SpanExtensionsTests.csproj", "{C386C94A-1E3E-43F8-BF16-FF1D31ADD881}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +43,14 @@ Global
 		{DCC487DB-01AF-43B9-8061-340BD018AF21}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DCC487DB-01AF-43B9-8061-340BD018AF21}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DCC487DB-01AF-43B9-8061-340BD018AF21}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8A4A63E5-1F9D-4585-B350-9CF821B59212}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8A4A63E5-1F9D-4585-B350-9CF821B59212}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8A4A63E5-1F9D-4585-B350-9CF821B59212}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8A4A63E5-1F9D-4585-B350-9CF821B59212}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C386C94A-1E3E-43F8-BF16-FF1D31ADD881}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C386C94A-1E3E-43F8-BF16-FF1D31ADD881}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C386C94A-1E3E-43F8-BF16-FF1D31ADD881}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C386C94A-1E3E-43F8-BF16-FF1D31ADD881}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
