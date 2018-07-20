@@ -41,7 +41,7 @@ namespace StringCalculators
 
                 ValidateNoNegativeNumbers(numbers);
 
-                var filteredNumbers = FilterNumbersBiggerThan1000(numbers);
+                var filteredNumbers = numbers.Filter(n => n > 1000);
 
                 var sum = 0;
                 foreach (var number in filteredNumbers)
