@@ -7,14 +7,17 @@ namespace SpanExtensions
     public ref struct SpanSplitEnumerable
     {
         ReadOnlySpan<char> Span { get; }
-        ReadOnlySpan<char> Separator { get; }
-        public SpanSplitEnumerable(in ReadOnlySpan<char> span, in ReadOnlySpan<char> separator)
+        ReadOnlySpan<char> CombinedSeparator { get; }
+
+        ReadOnlySpan<(int,int)> SeparatorsIndicesAndLengths { get; }
+        public SpanSplitEnumerable(in ReadOnlySpan<char> span, in ReadOnlySpan<char> combinedSeparator, in ReadOnlySpan<(int,int)> separatorsIndices)
         {
             Span = span;
-            Separator = separator;
+            CombinedSeparator = combinedSeparator;
+            SeparatorsIndicesAndLengths = separatorsIndices;
         }
 
         public SpanSplitEnumerator GetEnumerator()
-            => new SpanSplitEnumerator(Span, Separator);
+            => new SpanSplitEnumerator(Span, CombinedSeparator, SeparatorsIndicesAndLengths);
     }
 }

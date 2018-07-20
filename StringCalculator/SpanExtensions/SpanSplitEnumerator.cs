@@ -5,13 +5,16 @@ namespace SpanExtensions
     public ref struct SpanSplitEnumerator
     {
         ReadOnlySpan<char> Span { get; set; }
-        ReadOnlySpan<char> Separator { get; }
+        ReadOnlySpan<char> CombinedSeparator { get; }
+        ReadOnlySpan<(int, int)> SeparatorsIndicesAndLength { get; }
         public ReadOnlySpan<char> Current { get; private set; }
 
-        public SpanSplitEnumerator(in ReadOnlySpan<char> span, in ReadOnlySpan<char> separator)
+
+        public SpanSplitEnumerator(in ReadOnlySpan<char> span, in ReadOnlySpan<char> separator, in ReadOnlySpan<(int, int)> separatorsIndicesAndLength)
         {
             Span = span;
-            Separator = separator;
+            CombinedSeparator = separator;
+            SeparatorsIndicesAndLength = separatorsIndicesAndLength;
             Current = default;
         }
 
@@ -22,8 +25,8 @@ namespace SpanExtensions
                 return false;
             }
 
-            int index = Span.IndexOf(Separator);
-            if (index == -1 || Separator.IsEmpty)
+            (int index, int separatorLength) = FindSeparatorInSpan();
+            if (index == -1 || separatorLength == 0)
             {
                 Current = Span;
                 Span = default;
@@ -31,7 +34,7 @@ namespace SpanExtensions
             else
             {
                 Current = Span.Slice(0, index);
-                Span = Span.Slice(index + Separator.Length);
+                Span = Span.Slice(index + separatorLength);
                 if (Current.IsEmpty)
                 {
                     return MoveNext();
@@ -41,6 +44,21 @@ namespace SpanExtensions
             return true;
         }
 
+        private (int position, int separatorLength) FindSeparatorInSpan()
+        {
+            int firstOccurance = int.MaxValue;
+            int separatorLength = 0;
+            foreach ((int index, int length) in SeparatorsIndicesAndLength)
+            {
+                int indexOfOccurance = Span.IndexOf(CombinedSeparator.Slice(index, length));
+                if (indexOfOccurance != -1 && indexOfOccurance < firstOccurance)
+                {
+                    firstOccurance = indexOfOccurance;
+                    separatorLength = length;
+                }
+            }
 
+            return (firstOccurance, separatorLength);
+        }
     }
 }
