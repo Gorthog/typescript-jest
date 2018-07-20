@@ -1,4 +1,6 @@
-﻿using System;
+﻿using SpanExtensions;
+using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -6,42 +8,89 @@ namespace StringCalculators
 {
     public class SpanCalculator : IStringCalculator
     {
+        ArrayPool<int> IntPool = ArrayPool<int>.Shared;
+        int[] IntBuffer;
         static readonly string[] DefaultSeparators = new string[] { ",", "\n" };
 
         public string Add(in ReadOnlySpan<char> input)
         {
-            (string[] separators, string expression) = ParseToSeparatorsAndExpression(input);
-
-            var numbers = GetNumbers(separators, expression);
-
-            ValidateNoNegativeNumbers(numbers);
-
-            var filteredNumbers = FilterNumbersBiggerThan1000(numbers);
-
-            var sum = 0;
-            foreach (var number in filteredNumbers)
+            try
             {
-                sum += number;
-            }
+                (string[] separators, string expression) = ParseToSeparatorsAndExpression(input);
 
-            return sum.ToString();
+                var numbers = GetNumbers(separators, expression);
+
+                ValidateNoNegativeNumbers(numbers);
+
+                var filteredNumbers = FilterNumbersBiggerThan1000(numbers);
+
+                var sum = 0;
+                foreach (var number in filteredNumbers)
+                {
+                    sum += number;
+                }
+
+                return sum.ToString();
+            }
+            finally
+            {
+                IntPool.Return(IntBuffer);
+            }
         }
 
-        private Span<int> FilterNumbersBiggerThan1000(int[] numbers)
+        private Span<int> FilterNumbersBiggerThan1000(in Span<int> numbers)
         {
-            Array.Sort(numbers);
-            int index = 0;
-            while (index < numbers.Length && numbers[index] <= 1000)
+            int indexOfNumberSmallerThan1000 = 0;
+            while (indexOfNumberSmallerThan1000 < numbers.Length && numbers[indexOfNumberSmallerThan1000] > 1000)
             {
+                indexOfNumberSmallerThan1000++;
+            }
+
+            if (indexOfNumberSmallerThan1000 == numbers.Length)
+            {
+                return Span<int>.Empty;
+            }
+
+            int index = 0;
+            for (int i = indexOfNumberSmallerThan1000; i < numbers.Length; i++)
+            {
+                if (numbers[i] > 1000)
+                {
+                    (numbers[i], numbers[indexOfNumberSmallerThan1000]) = (numbers[indexOfNumberSmallerThan1000], numbers[i]);
+                    indexOfNumberSmallerThan1000++;
+                }
+            }
+
+            return numbers.Slice(indexOfNumberSmallerThan1000);
+        }
+
+        public static void GetNumbersVoid(string[] separators, ReadOnlySpan<char> expression)
+        {
+            var list = new LinkedList<int>();
+            foreach (var number in expression.Split(separators))
+            {
+                list.AddLast(int.Parse(number));
+            }
+
+            list.ToArray();
+        }
+
+        public Span<int> GetNumbers(string[] separators, ReadOnlySpan<char> expression)
+        {
+            IntBuffer = IntPool.Rent(100);
+            int index = 0;
+            foreach (var number in expression.Split(separators))
+            {
+                if (index == IntBuffer.Length)
+                {
+                    throw new Exception("buffer too small");
+                }
+
+                IntBuffer[index] = int.Parse(number);
                 index++;
             }
 
-            return numbers.AsSpan().Slice(0, index);
-        }
-
-        private static int[] GetNumbers(string[] separators, string expression)
-        {
-            return expression.Split(separators, StringSplitOptions.RemoveEmptyEntries).Select(n => int.Parse(n.AsSpan())).ToArray();
+            return IntBuffer.AsSpan(0, index);
         }
 
         private void ValidateNoNegativeNumbers(Span<int> numbers)

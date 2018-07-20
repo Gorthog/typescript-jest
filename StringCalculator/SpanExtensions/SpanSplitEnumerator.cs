@@ -5,16 +5,14 @@ namespace SpanExtensions
     public ref struct SpanSplitEnumerator
     {
         ReadOnlySpan<char> Span { get; set; }
-        ReadOnlySpan<char> CombinedSeparator { get; }
-        ReadOnlySpan<(int, int)> SeparatorsIndicesAndLength { get; }
+        ReadOnlySpan<string> Separators { get; }
         public ReadOnlySpan<char> Current { get; private set; }
 
 
-        public SpanSplitEnumerator(in ReadOnlySpan<char> span, in ReadOnlySpan<char> separator, in ReadOnlySpan<(int, int)> separatorsIndicesAndLength)
+        public SpanSplitEnumerator(in ReadOnlySpan<char> span, in ReadOnlySpan<string> separators)
         {
             Span = span;
-            CombinedSeparator = separator;
-            SeparatorsIndicesAndLength = separatorsIndicesAndLength;
+            Separators = separators;
             Current = default;
         }
 
@@ -48,13 +46,13 @@ namespace SpanExtensions
         {
             int firstOccurance = int.MaxValue;
             int separatorLength = 0;
-            foreach ((int index, int length) in SeparatorsIndicesAndLength)
+            foreach (string separator in Separators)
             {
-                int indexOfOccurance = Span.IndexOf(CombinedSeparator.Slice(index, length));
+                int indexOfOccurance = Span.IndexOf(separator);
                 if (indexOfOccurance != -1 && indexOfOccurance < firstOccurance)
                 {
                     firstOccurance = indexOfOccurance;
-                    separatorLength = length;
+                    separatorLength = separator.Length;
                 }
             }
 

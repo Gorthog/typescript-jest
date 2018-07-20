@@ -4,14 +4,19 @@ using System;
 
 namespace StringCalculatorBenchmarks
 {
-    public class StringCalculators
+    public class Calculators
     {
         StringCalculator stringCalculator = new StringCalculator();
         SpanCalculator spanCalculator = new SpanCalculator();
 
         public void StringCalculator() => stringCalculator.Add("//[***][%%%][^^]\n1***2%%%3^^4");
 
-        public void SpanCalculator() => spanCalculator.Add("//[***][%%%][^^]\n1***2%%%3^^4".AsSpan());
+        public void SpanCalculator() => spanCalculator.Add("//[***][%%%][^^]\n1***2%%%3^^4");
+
+        string[] separatos = new[] { "***", "%%%", "^^" };
+        string expression = "\n1***2%%%3^^4";
+
+        public void GetNumbers() => spanCalculator.GetNumbers(separatos, expression);
     }
 
     public class AllocationStats
@@ -36,9 +41,15 @@ namespace StringCalculatorBenchmarks
         static void Main(string[] args)
         {
             var allocationStats = new AllocationStats();
-            var stringCalculators = new StringCalculators();
-            allocationStats.PrintTotalAllocatedBytes(actionToBeMeasured: stringCalculators.StringCalculator);
-            allocationStats.PrintTotalAllocatedBytes(actionToBeMeasured: stringCalculators.SpanCalculator);
+            var calculators = new Calculators();
+            // warmup 
+            allocationStats.PrintTotalAllocatedBytes(actionToBeMeasured: calculators.StringCalculator);
+            allocationStats.PrintTotalAllocatedBytes(actionToBeMeasured: calculators.SpanCalculator);
+
+
+            allocationStats.PrintTotalAllocatedBytes(actionToBeMeasured: calculators.StringCalculator);
+            allocationStats.PrintTotalAllocatedBytes(actionToBeMeasured: calculators.SpanCalculator);
+            allocationStats.PrintTotalAllocatedBytes(() => calculators.GetNumbers());
         }
     }
 }
