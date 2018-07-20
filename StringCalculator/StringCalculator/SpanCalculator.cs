@@ -8,17 +8,36 @@ namespace StringCalculators
 {
     public class SpanCalculator : IStringCalculator
     {
+        internal ref struct SpanHolder
+        {
+            public SpanHolder(Span<string> separators, ReadOnlySpan<char> expression) : this()
+            {
+                Separators = separators;
+                Expression = expression;
+            }
+
+            internal Span<string> Separators { get; set; }
+            internal ReadOnlySpan<char> Expression { get; set; }
+        }
+
         ArrayPool<int> IntPool = ArrayPool<int>.Shared;
+        ArrayPool<string> StringPool = ArrayPool<string>.Shared;
         int[] IntBuffer;
+        string[] StringBuffer;
         static readonly string[] DefaultSeparators = new string[] { ",", "\n" };
+
+        public string Add(string input)
+        {
+            return Add(input.AsSpan());
+        }
 
         public string Add(in ReadOnlySpan<char> input)
         {
             try
             {
-                (string[] separators, string expression) = ParseToSeparatorsAndExpression(input);
+                var spanHolder = ParseToSeparatorsAndExpression(input);
 
-                var numbers = GetNumbers(separators, expression);
+                var numbers = GetNumbers(spanHolder.Separators, spanHolder.Expression);
 
                 ValidateNoNegativeNumbers(numbers);
 
@@ -34,7 +53,15 @@ namespace StringCalculators
             }
             finally
             {
-                IntPool.Return(IntBuffer);
+                if (IntBuffer != null)
+                {
+                    IntPool.Return(IntBuffer);
+                }
+
+                if (StringBuffer != null)
+                {
+                    StringPool.Return(StringBuffer);
+                }
             }
         }
 
@@ -75,7 +102,7 @@ namespace StringCalculators
             list.ToArray();
         }
 
-        public Span<int> GetNumbers(string[] separators, ReadOnlySpan<char> expression)
+        public Span<int> GetNumbers(Span<string> separators, ReadOnlySpan<char> expression)
         {
             IntBuffer = IntPool.Rent(100);
             int index = 0;
@@ -113,9 +140,9 @@ namespace StringCalculators
             }
         }
 
-        private static (string[] separators, string expression) ParseToSeparatorsAndExpression(ReadOnlySpan<char> expression)
+        private SpanHolder ParseToSeparatorsAndExpression(ReadOnlySpan<char> expression)
         {
-            var separators = DefaultSeparators;
+            Span<string> separators = DefaultSeparators;
             if (AreOptionalSeparatorsSpecified(expression))
             {
                 expression = expression.Slice(2);
@@ -124,18 +151,20 @@ namespace StringCalculators
                 expression = expression.Slice(splitPosition);
             }
 
-            return (separators, expression.ToString());
+            return new SpanHolder(separators, expression);
         }
 
-        private static string[] ExtractOptionalSeparators(ReadOnlySpan<char> header)
+        private Span<string> ExtractOptionalSeparators(in ReadOnlySpan<char> header)
         {
+            StringBuffer = StringPool.Rent(100);
             if (header.Length == 1)
             {
-                return new string[] { header.ToString() };
+                StringBuffer[0] = header.ToString();
+                return StringBuffer.AsSpan(0, 1);
             }
 
-            var separators = new LinkedList<string>();
-            int separatorStartIndex = 0, separatorLength = 0;
+            Span<string> separators = StringBuffer;
+            int separatorStartIndex = 0, separatorLength = 0, separatorsCount = 0;
             while (separatorStartIndex < header.Length && header[separatorStartIndex] == '[')
             {
                 separatorStartIndex++;
@@ -144,22 +173,17 @@ namespace StringCalculators
                     separatorLength++;
                 }
 
-                separators.AddLast(header.Slice(separatorStartIndex, separatorLength).ToString());
+                separators[separatorsCount++] = header.Slice(separatorStartIndex, separatorLength).ToString();
                 separatorStartIndex += separatorLength + 1;
                 separatorLength = 0;
             }
 
-            return separators.ToArray();
+            return separators.Slice(0, separatorsCount);
         }
 
         private static bool AreOptionalSeparatorsSpecified(ReadOnlySpan<char> expression)
         {
             return expression.StartsWith("//");
-        }
-
-        public string Add(string input)
-        {
-            return Add(input.AsSpan());
         }
     }
 }

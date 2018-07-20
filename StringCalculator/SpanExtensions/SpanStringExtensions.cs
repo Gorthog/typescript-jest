@@ -11,7 +11,7 @@ namespace SpanExtensions
             return new SpanSplitEnumerable(span, SingleSeparatorBuffer);
         }
 
-        public static SpanSplitEnumerable Split(this in ReadOnlySpan<char> span, string[] separators)
+        public static SpanSplitEnumerable Split(this in ReadOnlySpan<char> span, in ReadOnlySpan<string> separators)
         {
             return new SpanSplitEnumerable(span, separators);
         }
