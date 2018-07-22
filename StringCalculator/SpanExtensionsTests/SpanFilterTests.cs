@@ -8,10 +8,11 @@ namespace SpanExtensionsTests
     public class SpanFilterTests
     {
         [Fact]
-        void ItExists()
+        void ItFiltersEmptyArray()
         {
-            Span<int> span = new[] { 1, 2 };
-            span.Filter(x => x > 1000);
+            Span<int> span = Span<int>.Empty;
+            var actual = span.Filter(x => x > 1);
+            actual.ToArray().Should().BeEquivalentTo(Array.Empty<int>());
         }
 
         [Fact]
@@ -24,14 +25,6 @@ namespace SpanExtensionsTests
         }
 
         [Fact]
-        void ItFiltersEmptyArray()
-        {
-            Span<int> span = Span<int>.Empty;
-            var actual = span.Filter(x => x > 1);
-            actual.ToArray().Should().BeEquivalentTo(Array.Empty<int>());
-        }
-
-        [Fact]
         void ItFiltersFirstElement()
         {
             Span<int> span = new[] { 1, 2 };
@@ -40,7 +33,15 @@ namespace SpanExtensionsTests
         }
 
         [Fact]
-        void ItFiltersAll()
+        void ItFiltersElementInTheMiddle()
+        {
+            Span<int> span = new[] { 1, 2, 1 };
+            var actual = span.Filter(x => x == 2);
+            actual.ToArray().Should().BeEquivalentTo(new[] { 1, 1 });
+        }
+
+        [Fact]
+        void ItFiltersAllElements()
         {
             Span<int> span = new[] { 1, 1, 1 };
             var actual = span.Filter(x => true);

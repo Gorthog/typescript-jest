@@ -4,43 +4,38 @@ namespace SpanExtensions
 {
     public static class SpanFilterExtensions
     {
-        public static Span<T> Filter<T>(this Span<T> span, Predicate<T> predicate)
+        public static Span<T> Filter<T>(this Span<T> span, Predicate<T> filter)
         {
-            int indexOfNotFilteredItem = FindFirstOccuranceOfNotFilteredItem(span, predicate);
+            int indexOfFirstNotFilteredItem = FindFirstOccuranceOfNotFilteredItem(span, filter);
 
-            if (indexOfNotFilteredItem == span.Length)
-            {
-                return Span<T>.Empty;
-            }
+            indexOfFirstNotFilteredItem = SwapFilteredItemsToSpanStart(ref span, filter, indexOfFirstNotFilteredItem);
 
-            indexOfNotFilteredItem = MoveAllFilteredItemsToSpanStart(ref span, predicate, indexOfNotFilteredItem);
-
-            return span.Slice(indexOfNotFilteredItem);
-        }
-
-        private static int MoveAllFilteredItemsToSpanStart<T>(ref Span<T> span, Predicate<T> predicate, int indexOfNotFilteredItem)
-        {
-            for (int i = indexOfNotFilteredItem + 1; i < span.Length; i++)
-            {
-                if (predicate(span[i]))
-                {
-                    (span[i], span[indexOfNotFilteredItem]) = (span[indexOfNotFilteredItem], span[i]);
-                    indexOfNotFilteredItem++;
-                }
-            }
-
-            return indexOfNotFilteredItem;
+            return span.Slice(indexOfFirstNotFilteredItem);
         }
 
         private static int FindFirstOccuranceOfNotFilteredItem<T>(in Span<T> span, Predicate<T> predicate)
         {
-            int indexOfNotFilteredItem = 0;
-            while (indexOfNotFilteredItem < span.Length && predicate(span[indexOfNotFilteredItem]))
+            int indexOfFirstNotFilteredItem = 0;
+            while (indexOfFirstNotFilteredItem < span.Length && predicate(span[indexOfFirstNotFilteredItem]))
             {
-                indexOfNotFilteredItem++;
+                indexOfFirstNotFilteredItem++;
             }
 
-            return indexOfNotFilteredItem;
+            return indexOfFirstNotFilteredItem;
+        }
+
+        private static int SwapFilteredItemsToSpanStart<T>(ref Span<T> span, Predicate<T> filter, int indexOfFirstNotFilteredItem)
+        {
+            for (int i = indexOfFirstNotFilteredItem + 1; i < span.Length; i++)
+            {
+                if (filter(span[i]))
+                {
+                    (span[i], span[indexOfFirstNotFilteredItem]) = (span[indexOfFirstNotFilteredItem], span[i]);
+                    indexOfFirstNotFilteredItem++;
+                }
+            }
+
+            return indexOfFirstNotFilteredItem;
         }
     }
 }
