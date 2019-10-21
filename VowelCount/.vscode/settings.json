@@ -1,5 +1,6 @@
 {
   "jest.pathToJest": "npm run jest:watchAll --",
   "jest.runAllTestsFirst": false,
-  "jest.showCoverageOnLoad": true
+  "jest.showCoverageOnLoad": true,
+  "tslint.alwaysShowRuleFailuresAsWarnings": false
 }
