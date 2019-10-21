@@ -1,0 +1,5 @@
+{
+  "jest.pathToJest": "npm run jest:watchAll --",
+  "jest.runAllTestsFirst": false,
+  "jest.showCoverageOnLoad": true
+}
