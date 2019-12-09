@@ -2,5 +2,6 @@
   "jest.pathToJest": "npm run jest:watchAll --",
   "jest.runAllTestsFirst": false,
   "jest.showCoverageOnLoad": true,
-  "tslint.alwaysShowRuleFailuresAsWarnings": false
+  "tslint.alwaysShowRuleFailuresAsWarnings": false,
+  "typescript.tsdk": "node_modules/typescript/lib"
 }
