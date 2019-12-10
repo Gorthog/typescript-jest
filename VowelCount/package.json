@@ -10,8 +10,8 @@
   "license": "Apache-2.0",
   "keywords": [],
   "scripts": {
-    "jest:watchAll": "jest --watchAll",
-    "test": "jest --coverage --verbose",
+    "jest:watchAll": "jest --watchAll --colors",
+    "test": "jest --coverage --verbose --colors",
     "check": "gts check",
     "clean": "gts clean",
     "compile": "tsc -p .",
