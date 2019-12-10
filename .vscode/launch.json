@@ -6,12 +6,12 @@
     "configurations": [
         {
             "type": "node",
-            "name": "vscode-jest-tests",
+            "name": "debug jest",
             "request": "launch",
             "args": [
                 "--runInBand",
                 "--coverage",
-                "false"
+                "true"
             ],
             "cwd": "${workspaceFolder}",
             "console": "integratedTerminal",
